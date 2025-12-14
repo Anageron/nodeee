@@ -1,6 +1,6 @@
 // timer.js
-const { performance } = require('perf_hooks');
-const notifier = require('node-notifier');
+const { performance } = require("perf_hooks");
+const notifier = require("node-notifier");
 
 // Функция для парсинга строки вида "1h 5m 10s"
 function parseTime(input) {
@@ -8,7 +8,7 @@ function parseTime(input) {
   const matches = input.trim().match(regex);
 
   if (!matches) {
-    throw new Error('Неверный формат времени');
+    throw new Error("Неверный формат времени");
   }
 
   const hours = matches[1] ? parseInt(matches[1], 10) : 0;
@@ -16,7 +16,7 @@ function parseTime(input) {
   const seconds = matches[3] ? parseInt(matches[3], 10) : 0;
 
   if (hours < 0 || minutes < 0 || seconds < 0) {
-    throw new Error('Время не может быть отрицательным');
+    throw new Error("Время не может быть отрицательным");
   }
 
   return (hours * 3600 + minutes * 60 + seconds) * 1000; // в миллисекундах
@@ -34,18 +34,18 @@ function formatTime(ms) {
   if (minutes > 0) parts.push(`${minutes}м`);
   if (seconds > 0 || parts.length === 0) parts.push(`${seconds}с`);
 
-  return parts.join(' ');
+  return parts.join(" ");
 }
 
 function startTimer(durationMs) {
   if (durationMs <= 0) {
-     notifier.notify({
-        title: 'Таймер завершён!',
-        message: 'Время вышло! ⏰',
-        sound: true, // проиграть системный звук уведомления
-        wait: false  // не ждать клика по уведомлению
-      });
-    console.log('Время должно быть больше нуля!');
+    notifier.notify({
+      title: "Таймер завершён!",
+      message: "Время вышло! ⏰",
+      sound: true, // проиграть системный звук уведомления
+      wait: false, // не ждать клика по уведомлению
+    });
+    console.log("Время должно быть больше нуля!");
     process.exit(1);
   }
 
@@ -53,7 +53,7 @@ function startTimer(durationMs) {
   const endTime = startTime + durationMs;
 
   console.log(`⏱️ Таймер запущен на ${formatTime(durationMs)}`);
-  console.log('Ожидание завершения...\n');
+  console.log("Ожидание завершения...\n");
 
   const interval = setInterval(() => {
     const now = performance.now();
@@ -61,15 +61,21 @@ function startTimer(durationMs) {
 
     if (remaining <= 0) {
       clearInterval(interval);
-      console.log('\n🔔 Время вышло! Звонок!');
+      notifier.notify({
+        title: "Таймер завершён!",
+        message: "Время вышло! ⏰",
+        sound: true,
+        wait: false,
+      });
+      console.log("\n🔔 Время вышло! Звонок!");
       process.exit(0);
     }
 
     process.stdout.write(`\r⏱️ Осталось: ${formatTime(remaining)}`);
-  }, 200); 
+  }, 200);
 
-  process.on('SIGINT', () => {
-    console.log('\n\nТаймер остановлен пользователем.');
+  process.on("SIGINT", () => {
+    console.log("\n\nТаймер остановлен пользователем.");
     process.exit(0);
   });
 }
@@ -82,12 +88,12 @@ function main() {
     process.exit(1);
   }
 
-  const input = args.join(' ');
+  const input = args.join(" ");
   try {
     const durationMs = parseTime(input);
     startTimer(durationMs);
   } catch (err) {
-    console.error('Ошибка:', err.message);
+    console.error("Ошибка:", err.message);
     process.exit(1);
   }
 }
